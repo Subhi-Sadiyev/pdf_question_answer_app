@@ -3,14 +3,26 @@ from tkinter import filedialog, messagebox
 import threading
 from pdf_to_text import extract_text_from_entire_pdf  # Custom file for PDF text extraction
 from transformers import pipeline
+import os
+import sys
+
+
 
 class QAApp:
     def __init__(self, root):
         self.root = root
         self.root.title("PDF sual-cavab proqramı")
 
-        ## app icon
-        self.root.iconbitmap('qa_icon.ico')
+        ## Get the directory of the running script/executable to handle
+        ## icon location change
+        if getattr(sys, 'frozen', False):
+            application_path = sys._MEIPASS
+        else:
+            application_path = os.path.dirname(os.path.abspath(__file__))
+
+        ## Load the icon dynamically
+        icon_path = os.path.join(application_path, 'qa_icon.ico')
+        self.root.iconbitmap(icon_path)
 
         self.pdf_path = None
         self.pdf_text = None
@@ -41,8 +53,9 @@ class QAApp:
         self.answer_text.pack(pady=5)
 
         ## Load QA model from local dir
-        #self.qa_model = pipeline("question-answering", model="timpal0l/mdeberta-v3-base-squad2")
-        self.qa_model = pipeline("question-answering", model="./qa_model")
+        ## need to make dynamic for pyinstaller packaging
+        model_path = os.path.join(application_path, 'qa_model')
+        self.qa_model = pipeline("question-answering", model=model_path)
 
     def select_pdf(self):
         self.pdf_path = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
